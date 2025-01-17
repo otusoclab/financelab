@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Lab Access Form</title>
+    <style>
+      body {
+        font-size: 30px; /*adjust the size as needed*/
+        display: flex;
+        justify-content: center; /*Align the text in the body in the middle*/
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+      }
+      form {
+        text-align: left;
+      }
+      #otherPurpose {
+        display: none;
+      }
+    </style>
+    <script>
+      function checkPurpose(value) {
+        var otherPurposeField = document.getElementById('otherPurpose');
+        if (value === 'Other') {
+          otherPurposeField.style.display = 'block';
+          otherPurposeField.querySelector('textarea').required = true;
+        } else {
+          otherPurposeField.style.display = 'none';
+          otherPurposeField.querySelector('textarea').required = false;
+        }
+      }
+      function setCurrentDateTime() {
+        var now = new Date();
+        var date = now.toISOString().split('T')[0];
+        var time = now.toTimeString().split(' ')[0].substr(0, 5);
+        document.getElementById('accessDate').value = date;
+        document.getElementById('accessTime').value = time;
+      }
+      function validateForm(event) {
+        var name = document.getElementById('name').value;
+        var studentID = document.getElementById('studentID').value;
+        var courseID = document.getElementById('courseID').value;
+        var nameRegex = /^[A-Za-z\s]+$/;
+        var studentIDRegex = /^\d{9}$/;
+        var courseIDRegex = /^[A-Za-z0-9]+$/;
+
+        if (!nameRegex.test(name)) {
+          alert('Full Name must contain only letters and spaces.');
+          event.preventDefault();
+          return false;
+        }
+
+        if (!studentIDRegex.test(studentID)) {
+          alert('Student ID must be a 9-digit number.');
+          event.preventDefault();
+          return false;
+        }
+
+        if (!courseIDRegex.test(courseID)) {
+          alert('Course ID must contain only letters and numbers.');
+          event.preventDefault();
+          return false;
+        }
+
+        var requiredFields = document.querySelectorAll('[required]');
+        var allFilled = true;
+
+        requiredFields.forEach(function(field) {
+          if (!field.value) {
+            allFilled = false;
+          }
+        });
+
+        if (!allFilled) {
+          alert('Please fill out all required fields before submitting the form.');
+          event.preventDefault();
+          return false;
+        }
+
+        return true;
+      }
+
+      // Function to handle barcode input and update form fields
+      function handleBarcodeInput() {
+        let barcode = document.getElementById('barcode-input').value;
+        fetch('/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'barcode=' + barcode
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            // Populate the correct fields
+            document.getElementById('name').value = data.name;
+            document.getElementById('studentID').value = data.student_id;
+          }
+        });
+        document.getElementById('barcode-input').value = '';  // Clear the input field
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('barcode-input').addEventListener('input', handleBarcodeInput);
+        document.getElementById('name').focus();  // Set focus on the name field
+      });
+    </script>
+  </head>
+  <body onload="setCurrentDateTime()">
+   
+    <img src="{{ url_for('static', filename='ontech.PNG') }}" alt="Lab Logo" width="350" height="300">
+    <h1>Finance Lab Access Form</h1>
+    <p><strong>Important:</strong> All students must complete this form before accessing the Finance Lab. Submission is mandatory and access will not be granted without the required fields being completed.</p><br><br>
+    
+    <form action="/submit" method="post" onsubmit="return validateForm(event)">
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" name="name" required autofocus><br><br>
+      <label for="studentID">Access/Student No.:</label>
+      <input type="text" id="studentID" name="studentID" required><br><br>
+      <label for="courseID">Course No.(INFR2670):</label>
+      <input type="text" id="courseID" name="courseID" required><br><br>
+      <label for="accessDate">Date of Access:</label>
+      <input type="date" id="accessDate" name="accessDate" readonly required><br><br>
+      <label for="accessTime">Time of Access:</label>
+      <input type="time" id="accessTime" name="accessTime" readonly required><br><br>
+      <label for="purpose">Purpose of Access:</label>
+      <select id="purpose" name="purpose" onchange="checkPurpose(this.value)" required>
+        <option value="">Select...</option>
+        <option value="Bloomberg">Bloomberg Software</option>
+        <option value="Datastream">Datastream Software</option>
+        <option value="Other">Other</option>
+      </select><br><br>
+      <div id="otherPurpose">
+        <label for="otherPurposeText">Please specify:</label>
+        <textarea id="otherPurposeText" name="otherPurposeText"></textarea><br><br>
+      </div>
+      <label for="role">Role:</label><br>
+      <input type="radio" id="student" name="role" value="Student" required> 
+      <label for="student">Student</label><br> 
+      <input type="radio" id="professor" name="role" value="Professor"> 
+      <label for="professor">Professor</label><br> 
+      <input type="radio" id="ta" name="role" value="TA/Sessional Inst"> 
+      <label for="ta">TA/Sessional Inst</label><br><br> 
+
+      <button type="submit">Submit</button>
+    </form>
+    
+  </body>
+</html>
