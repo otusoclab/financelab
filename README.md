@@ -11,5 +11,10 @@ Frontend: HTML, CSS, JavaScript
 Backend: Python (Flask framework)
 Database: SQLite
 
+Docker Deployment: 
+ - clone and cd into repository
+ - run `docker compose build`, this will build the container hosting the flask webserver
+ - run `docker run -d -p 5000:5000 financelab-web` to deploy the container, optionally bind mount student sign in database with `--mount type=bind,src=<DATABASE_LOCATION>,dst=/app/instance`
+
 Contributing
 We welcome contributions! If you have any suggestions or improvements, please feel free to open an issue or submit a pull request.
