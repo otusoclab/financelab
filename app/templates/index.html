@@ -15,10 +15,22 @@
         flex-direction: column;
       }
       form {
+        width: 90%;
+        max-width: 600px;
         text-align: left;
       }
       #otherPurpose {
         display: none;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+      }
+      @media (max-width: 600px) {
+        body {
+          font-size: 4w;
+        }
       }
     </style>
     <script>
@@ -79,7 +91,7 @@
           event.preventDefault();
           return false;
         }
-
+        alert ('You have been signed in') //this will prompt the user that they have been signed in
         return true;
       }
 
